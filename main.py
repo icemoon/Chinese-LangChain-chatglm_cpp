@@ -1,5 +1,6 @@
 import os
 import shutil
+import time
 
 from app_modules.overwrites import postprocess
 from app_modules.presets import *
@@ -35,6 +36,16 @@ def get_file_list():
 
 file_list = get_file_list()
 
+def load_new_file(file, history):
+    filename = os.path.basename(file.name)
+    if os.path.exists("docs/" + filename):
+        # file_list首位插入新上传的文件
+        file_list.insert(0, filename)
+        application.source_service.add_document("docs/" + filename)
+        msg_status = f'{filename} 文件已成功加载'
+    else:
+        msg_status = f'{filename} 文件不存在'
+    return history + [[None, msg_status]]
 
 def upload_file(file):
     if not os.path.exists("docs"):
@@ -42,8 +53,8 @@ def upload_file(file):
     filename = os.path.basename(file.name)
     shutil.move(file.name, "docs/" + filename)
     # file_list首位插入新上传的文件
-    file_list.insert(0, filename)
-    application.source_service.add_document("docs/" + filename)
+    #file_list.insert(0, filename)
+    #application.source_service.add_document("docs/" + filename)
     return gr.Dropdown.update(choices=file_list, value=filename)
 
 
@@ -157,8 +168,10 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
 
             file = gr.File(label="将文件上传到知识库库，内容要尽量匹配",
                            visible=True,
-                           file_types=['.txt', '.md', '.docx', '.pdf']
+                           file_types=['.txt', '.md', '.docx', '.pdf', 'doc']
                            )
+
+            set_file_btn = gr.Button("加载新文件")
 
         with gr.Column(scale=4):
             with gr.Row():
@@ -178,8 +191,17 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
 
         # ============= 触发动作=============
         file.upload(upload_file,
+                    show_progress=True,
                     inputs=file,
                     outputs=None)
+
+        set_file_btn.click(
+            load_new_file,
+            show_progress=True,
+            inputs=[file, chatbot],
+            outputs=chatbot
+        )
+
         set_kg_btn.click(
             set_knowledge,
             show_progress=True,

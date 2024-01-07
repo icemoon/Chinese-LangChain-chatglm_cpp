@@ -1,5 +1,6 @@
 langchain
-gradio
+gradio==3.50.0
+httpx==0.24.1
 transformers
 sentence_transformers
 faiss-cpu

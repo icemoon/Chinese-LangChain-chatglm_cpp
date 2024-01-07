@@ -1,6 +1,6 @@
 ---
 license: openrail
-title: 'Chinese-LangChain '
+title: 'Chinese-LangChain-chatglm_cpp'
 sdk: gradio
 emoji: 🚀
 colorFrom: yellow
@@ -9,13 +9,15 @@ pinned: true
 app_file: app.py
 ---
 
-# Chinese-LangChain
+# Chinese-LangChain-chatglm_cpp
 
-> Chinese-LangChain：中文langchain项目，基于ChatGLM-6b+langchain实现本地化知识库检索与智能答案生成
+> Chinese-LangChain-chatglm_cpp：中文langchain项目，基于ChatGLM-6b+langchain+chatglm.cpp实现本地化知识库检索与智能答案生成
 
-https://github.com/yanqiangmiffy/Chinese-LangChain
+- Fork from https://github.com/yanqiangmiffy/Chinese-LangChain
 
-俗称：小必应，Q.Talk，强聊，QiangTalk
+- depend on https://github.com/li-plus/chatglm.cpp
+
+此项目fork[yanqiangmiffy/Chinese-LangChain](https://github.com/yanqiangmiffy/Chinese-LangChain)，并且修改yanqiangmiffy/Chinese-LangChain中使用chatglm的方式，从python加速模型文件改为使用[li-plus/chatglm.cpp](https://github.com/li-plus/chatglm.cpp)来加速，获得更好的运行速度
 
 ## 🔥 效果演示
 
@@ -46,6 +48,27 @@ duckduckgo_search
 mdtex2html
 chardet
 cchardet
+```
+
+解决python依赖
+
+```shell
+pip3 install -r requirements.txt
+```
+
+如果执行过程中遇到安装cchardet错误，请先执行
+
+```shell
+pip3 install cython
+```
+
+### 启动chatglm.cpp 的API Server
+
+参考[chatglm.cpp文档](https://github.com/li-plus/chatglm.cpp)进行chatglm.cpp API Server的部署
+最后执行 Start the api server for LangChain:
+
+```shell
+MODEL=./chatglm2-ggml.bin uvicorn chatglm_cpp.langchain_api:app --host 127.0.0.1 --port 8000
 ```
 
 ### 启动Gradio

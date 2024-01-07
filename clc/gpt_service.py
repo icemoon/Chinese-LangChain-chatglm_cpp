@@ -17,8 +17,12 @@ from typing import List
 from accelerate import load_checkpoint_and_dispatch
 from langchain.llms.base import LLM
 from langchain.llms.utils import enforce_stop_tokens
+from langchain.llms import ChatGLM
+
 from transformers import AutoModel, AutoTokenizer
 
+import subprocess
+import sys
 
 class ChatGLMService(LLM):
     max_token: int = 10000
@@ -38,26 +42,38 @@ class ChatGLMService(LLM):
     def _call(self,
               prompt: str,
               stop: Optional[List[str]] = None) -> str:
-        response, _ = self.model.chat(
-            self.tokenizer,
-            prompt,
-            history=self.history,
-            max_length=self.max_token,
-            temperature=self.temperature,
-        )
-        if stop is not None:
-            response = enforce_stop_tokens(response, stop)
-        self.history = self.history + [[None, response]]
+        #response, _ = self.model.chat(
+        #    self.tokenizer,
+        #    prompt,
+        #    history=self.history,
+        #    max_length=self.max_token,
+        #    temperature=self.temperature,
+        #)
+        #if stop is not None:
+        #    response = enforce_stop_tokens(response, stop)
+        #self.history = self.history + [[None, response]]
+        #return response
+        ### ypy code
+        response = self.model._call(prompt, stop)
         return response
 
     def load_model(self,
                    model_name_or_path: str = "THUDM/chatglm-6b"):
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            model_name_or_path,
-            trust_remote_code=True
-        )
-        self.model = AutoModel.from_pretrained(model_name_or_path, trust_remote_code=True).half().cuda()
-        self.model = self.model.eval()
+        #self.tokenizer = AutoTokenizer.from_pretrained(
+        #    model_name_or_path,
+        #    trust_remote_code=True
+        #)
+        #self.model = AutoModel.from_pretrained(model_name_or_path, trust_remote_code=True).half().cuda()
+        #self.model = self.model.eval()
+        ### ypy code
+        #cmd = "MODEL=" + model_name_or_path + " uvicorn chatglm_cpp.langchain_api:app --host 127.0.0.1 --port 8000"
+        #pp = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        #stdout, stderr = pp.communicate(30)
+        #if result.returncode == 0:
+        self.model = ChatGLM(endpoint_url="http://127.0.0.1:8000")
+        #else:
+        #    print("Load model fail: " + model_name_or_path)
+        #    sys.exit()
 
     def auto_configure_device_map(self, num_gpus: int) -> Dict[str, int]:
         # transformer.word_embeddings 占用1层

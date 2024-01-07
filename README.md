@@ -124,19 +124,7 @@ python main.py
 * [ ] 显示当前对话策略
 * [ ] 构建一个垂直业务场景知识库，非通用性
 
-## 交流
 
-欢迎多提建议、Bad cases，目前尚不完善，欢迎进群及时交流，也欢迎大家多提PR</br>
-
-<figure class="third">
-  <img src="https://raw.githubusercontent.com/yanqiangmiffy/Chinese-LangChain/master/images/ch.jpg" width="180px">
-  <img src="https://raw.githubusercontent.com/yanqiangmiffy/Chinese-LangChain/master/images/chatgroup.jpg" width="180px" height="270px">
-
-</figure>
-
-合作交流可以联系：
-
-<img src="https://raw.githubusercontent.com/yanqiangmiffy/Chinese-LangChain/master/images/personal.jpg" width="180px">
 
 ## ❤️引用
 
@@ -144,9 +132,3 @@ python main.py
 - knowledge问答参考：https://github.com/imClumsyPanda/langchain-ChatGLM
 - LLM模型：https://github.com/THUDM/ChatGLM-6B
 - CSS：https://huggingface.co/spaces/JohnSmith9982/ChuanhuChatGPT
-
-
-
-## ⭐️ Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=yanqiangmiffy/Chinese-LangChain&type=Date)](https://star-history.com/#yanqiangmiffy/Chinese-LangChain&Date)

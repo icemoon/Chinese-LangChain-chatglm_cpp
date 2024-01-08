@@ -175,7 +175,7 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
 
         with gr.Column(scale=4):
             with gr.Row():
-                chatbot = gr.Chatbot(label='Chinese-LangChain').style(height=400)
+                chatbot = gr.Chatbot(label='Chinese-LangChain').style(height=600)
             with gr.Row():
                 message = gr.Textbox(label='请输入问题')
             with gr.Row():

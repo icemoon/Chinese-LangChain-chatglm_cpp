@@ -37,15 +37,18 @@ def get_file_list():
 file_list = get_file_list()
 
 def load_new_file(file, history):
-    filename = os.path.basename(file.name)
-    if os.path.exists("docs/" + filename):
-        # file_list首位插入新上传的文件
-        file_list.insert(0, filename)
-        application.source_service.add_document("docs/" + filename)
-        msg_status = f'{filename} 文件已成功加载'
+    if file is None:
+        msg_status = "没有收到上传文件"
     else:
-        msg_status = f'{filename} 文件不存在'
-    return history + [[None, msg_status]]
+        filename = os.path.basename(file.name)
+        if os.path.exists("docs/" + filename):
+            # file_list首位插入新上传的文件
+            file_list.insert(0, filename)
+            application.source_service.add_document("docs/" + filename)
+            msg_status = f'{filename} 文件已成功加载'
+        else:
+            msg_status = f'{filename} 文件不存在'
+    return '', history + [[None, msg_status]]
 
 def upload_file(file):
     if not os.path.exists("docs"):
@@ -199,7 +202,7 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
             load_new_file,
             show_progress=True,
             inputs=[file, chatbot],
-            outputs=chatbot
+            outputs=[message, chatbot]
         )
 
         set_kg_btn.click(

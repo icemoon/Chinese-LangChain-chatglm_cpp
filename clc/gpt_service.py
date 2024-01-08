@@ -22,6 +22,7 @@ from langchain.llms import ChatGLM
 from transformers import AutoModel, AutoTokenizer
 
 import subprocess
+import signal
 import sys
 
 class ChatGLMService(LLM):
@@ -31,9 +32,11 @@ class ChatGLMService(LLM):
     history = []
     tokenizer: object = None
     model: object = None
+    chatglm_app: str = None
 
     def __init__(self):
         super().__init__()
+        self.chatglm_app = "chatglm_cpp.langchain_api:app --host 127.0.0.1 --port 8000"
 
     @property
     def _llm_type(self) -> str:
@@ -57,8 +60,32 @@ class ChatGLMService(LLM):
         response = self.model._call(prompt, stop)
         return response
 
+    def start_chatglm(self, model_name):
+        start_cmd = "MODEL=" + model_name + " uvicorn " + self.chatglm_app
+        p = subprocess.Popen(start_cmd,
+                        shell=True,
+                        stdout=sys.stdout,
+                        stderr=sys.stdout)
+        print("Start chatglm pid: ", p.pid)
+
+    def check_chatglm(self):
+        check_cmd = "ps aux | grep python | grep -v grep | grep \'" + self.chatglm_app + "\'"
+        p = subprocess.Popen(check_cmd,
+                        shell=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        universal_newlines=True)
+        p.wait()
+        check_out = p.stdout.read().strip()
+        if check_out == '':
+            print("Check: Chatglm not running")
+            return False
+        else:
+            print("Check: Chatglm running as below\n" + check_out)
+            return True
+
     def load_model(self,
-                   model_name_or_path: str = "THUDM/chatglm-6b"):
+                model_name_or_path: str = "THUDM/chatglm-6b"):
         #self.tokenizer = AutoTokenizer.from_pretrained(
         #    model_name_or_path,
         #    trust_remote_code=True
@@ -66,14 +93,12 @@ class ChatGLMService(LLM):
         #self.model = AutoModel.from_pretrained(model_name_or_path, trust_remote_code=True).half().cuda()
         #self.model = self.model.eval()
         ### ypy code
-        #cmd = "MODEL=" + model_name_or_path + " uvicorn chatglm_cpp.langchain_api:app --host 127.0.0.1 --port 8000"
-        #pp = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        #stdout, stderr = pp.communicate(30)
-        #if result.returncode == 0:
+        if (self.check_chatglm() == False):
+            self.start_chatglm(model_name_or_path)
+            if (self.check_chatglm() == False):
+                print("Load model fail: " + model_name_or_path)
+                sys.exit()
         self.model = ChatGLM(endpoint_url="http://127.0.0.1:8000")
-        #else:
-        #    print("Load model fail: " + model_name_or_path)
-        #    sys.exit()
 
     def auto_configure_device_map(self, num_gpus: int) -> Dict[str, int]:
         # transformer.word_embeddings 占用1层
@@ -90,7 +115,7 @@ class ChatGLMService(LLM):
         # 如果transformer.word_embeddings.device和model.device不同,则会导致RuntimeError
         # 因此这里将transformer.word_embeddings,transformer.final_layernorm,lm_head都放到第一张卡上
         device_map = {'transformer.word_embeddings': 0,
-                      'transformer.final_layernorm': 0, 'lm_head': 0}
+                    'transformer.final_layernorm': 0, 'lm_head': 0}
 
         used = 2
         gpu_target = 0

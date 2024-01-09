@@ -142,7 +142,7 @@ def show_stream_response(history):
 with open("assets/custom.css", "r", encoding="utf-8") as f:
     customCSS = f.read()
 with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
-    gr.Markdown("""<h1><center>Chinese-LangChain</center></h1>
+    gr.Markdown("""<h1><center>Chinese-LangChain-ChatGLM</center></h1>
         <center><font size=3>
         </center></font>
         """)
@@ -199,7 +199,7 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
 
         with gr.Column(scale=4):
             with gr.Row():
-                chatbot = gr.Chatbot(label='Chinese-LangChain').style(height=600)
+                chatbot = gr.Chatbot(label='Chinese-LangChain-ChatGLM').style(height=600)
             with gr.Row():
                 message = gr.Textbox(label='请输入问题')
             with gr.Row():
@@ -207,8 +207,8 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
                 send = gr.Button("🚀 发送")
             with gr.Row():
                 gr.Markdown("""提醒：<br>
-                                        [Chinese-LangChain](https://github.com/yanqiangmiffy/Chinese-LangChain) <br>
-                                        有任何使用问题[Github Issue区](https://github.com/yanqiangmiffy/Chinese-LangChain)进行反馈. <br>
+                                        [Chinese-LangChain-chatglm_cpp](https://github.com/icemoon/Chinese-LangChain-chatglm_cpp) <br>
+                                        有任何使用问题[Github Issue区](https://github.com/icemoon/Chinese-LangChain-chatglm_cpp)进行反馈. <br>
                                         """)
         with gr.Column(scale=2):
             search = gr.Textbox(label='搜索结果')

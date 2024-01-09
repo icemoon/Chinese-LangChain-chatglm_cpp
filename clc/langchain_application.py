@@ -20,10 +20,9 @@ from clc.source_service import SourceService
 class LangChainApplication(object):
     def __init__(self, config):
         self.config = config
-        self.llm_service = ChatGLMService()
-        self.llm_service.load_model(model_name_or_path=self.config.llm_model_name)
-        # self.llm_service.load_model_on_gpus(model_name_or_path=self.config.llm_model_name,num_gpus=self.config.n_gpus)
         self.source_service = SourceService(config)
+        self.llm_service = ChatGLMService(config)
+        self.llm_service.load_model()
 
         # if self.config.kg_vector_stores is None:
         #     print("init a source vector store")
@@ -34,6 +33,9 @@ class LangChainApplication(object):
         #         self.source_service.load_vector_store(self.config.kg_vector_stores['初始化知识库'])
         #     except Exception as e:
         #         self.source_service.init_source_vector()
+
+    def change_model(self, model_name):
+        self.llm_service.change_model(model_name)
 
     def get_knowledge_based_answer(self, query,
                                    history_len=5,

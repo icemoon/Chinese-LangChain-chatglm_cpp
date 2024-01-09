@@ -9,8 +9,8 @@ from clc.langchain_application import LangChainApplication
 
 # 修改成自己的配置！！！
 class LangChainCFG:
-    llm_model_name = 'THUDM/chatglm-6b-int4-qe'  # 本地模型文件 or huggingface远程仓库
-    embedding_model_name = 'GanymedeNil/text2vec-large-chinese'  # 检索模型文件 or huggingface远程仓库
+    llm_model_name = 'THUDM/chatglm-6b-int4-qe' # 本地模型文件 or huggingface远程仓库
+    embedding_model_name = 'GanymedeNil/text2vec-large-chinese' # 检索模型文件 or huggingface远程仓库
     vector_store_path = './cache'
     docs_path = './docs'
     kg_vector_stores = {
@@ -74,6 +74,12 @@ def set_knowledge(kg_name, history):
 def clear_session():
     return '', None
 
+def show_user_msg(user_message, history):
+    cur_history = history
+    if history is None:
+        cur_history = []
+    cur_history = cur_history + [[user_message, None]]
+    return user_message, cur_history
 
 def predict(input,
             large_language_model,
@@ -95,8 +101,10 @@ def predict(input,
     if use_pattern == '模型问答':
         result = application.get_llm_answer(query=input, web_content=web_content)
         history.append((input, result))
+        if use_web == '使用':
+            search_text += "----------【网络检索内容】-----------\n"
         search_text += web_content
-        return '', history, history, search_text
+        return '', history, search_text
 
     else:
         resp = application.get_knowledge_based_answer(
@@ -115,8 +123,21 @@ def predict(input,
         print(search_text)
         search_text += "----------【网络检索内容】-----------\n"
         search_text += web_content
-        return '', history, history, search_text
+        return '', history, search_text
 
+# show stream response
+def show_stream_response(history):
+    if history is None:
+        print("Exception history is None")
+        return
+    result = history[-1][1]
+    message = history[-1][0]
+    history.pop()
+    history = history + [[message, '']]
+    for char in result:
+        history[-1][1] += char
+        yield (history, history)
+        time.sleep(0.03)
 
 with open("assets/custom.css", "r", encoding="utf-8") as f:
     customCSS = f.read()
@@ -211,18 +232,6 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
             inputs=[kg_name, chatbot],
             outputs=chatbot
         )
-        # 发送按钮 提交
-        send.click(predict,
-                   inputs=[
-                       message,
-                       large_language_model,
-                       embedding_model,
-                       top_k,
-                       use_web,
-                       use_pattern,
-                       state
-                   ],
-                   outputs=[message, chatbot, state, search])
 
         # 清空历史对话按钮 提交
         clear_history.click(fn=clear_session,
@@ -230,18 +239,37 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
                             outputs=[chatbot, state],
                             queue=False)
 
+        # 发送按钮 提交
+        send.click(show_user_msg,
+                    [message, state],
+                    [message, chatbot],
+                    queue=False).then(
+        predict,
+        [message, large_language_model, embedding_model,
+        top_k, use_web, use_pattern, state],
+        [message, state, search],
+        queue=True).then(
+            show_stream_response,
+            state,
+            [chatbot, state],
+            queue=True
+        )
+
         # 输入框 回车
-        message.submit(predict,
-                       inputs=[
-                           message,
-                           large_language_model,
-                           embedding_model,
-                           top_k,
-                           use_web,
-                           use_pattern,
-                           state
-                       ],
-                       outputs=[message, chatbot, state, search])
+        message.submit(show_user_msg,
+                    [message, state],
+                    [message, chatbot],
+                    queue=False).then(
+        predict,
+        [message, large_language_model, embedding_model,
+        top_k, use_web, use_pattern, state],
+        [message, state, search],
+        queue=True).then(
+            show_stream_response,
+            state,
+            [chatbot, state],
+            queue=True
+        )
 
 demo.queue(concurrency_count=2).launch(
     server_name='0.0.0.0',

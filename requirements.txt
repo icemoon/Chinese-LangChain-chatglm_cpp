@@ -1,6 +1,8 @@
 langchain[all]
 chatglm-cpp
 chatglm-cpp[api]
+llama-cpp-python
+llama-cpp-python[server]
 gradio==3.50.0
 httpx==0.24.1
 transformers
